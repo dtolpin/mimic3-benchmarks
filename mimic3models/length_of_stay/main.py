@@ -53,7 +53,19 @@ else:
 cont_channels = [i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1]
 
 normalizer = Normalizer(fields=cont_channels)  # choose here onlycont vs all
-normalizer.load_params('los_ts{}.input_str:previous.start_time:zero.n5e4.normalizer'.format(args.timestep))
+params_file_name = 'los_ts{}.input_str:previous.start_time:zero.n5e4.normalizer'.format(args.timestep)
+try:
+    normalizer.load_params(params_file_name)
+except FileNotFoundError as e:
+    print("! regenerating normalization parameters")
+    train_data_gen = utils.BatchGen(reader=train_reader,
+                                    discretizer=discretizer,
+                                    normalizer=normalizer,
+                                    partition=args.partition,
+                                    batch_size=args.batch_size,
+                                    steps=train_nbatches,
+                                    shuffle=True)
+
 
 args_dict = dict(args._get_kwargs())
 args_dict['header'] = discretizer_header

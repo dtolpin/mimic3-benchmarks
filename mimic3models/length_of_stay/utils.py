@@ -25,6 +25,7 @@ class BatchGen(object):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.return_names = return_names
+        self.return_y_true = False
 
         if steps is None:
             self.n_examples = reader.get_number_of_examples()
@@ -89,7 +90,8 @@ class BatchGen(object):
             return next(self.generator)
 
     def __next__(self):
-        return self.generator.__next__()
+        with self.lock:
+            return self.generator.__next__()
 
 
 class BatchGenDeepSupervision(object):
@@ -223,7 +225,8 @@ class BatchGenDeepSupervision(object):
             return next(self.generator)
 
     def __next__(self):
-        return self.generator.__next__()
+        with self.lock:
+            return self.generator.__next__()
 
 
 def save_results(names, ts, pred, y_true, path):
