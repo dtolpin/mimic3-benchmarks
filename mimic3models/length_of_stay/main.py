@@ -65,7 +65,10 @@ except FileNotFoundError as e:
                                     batch_size=args.batch_size,
                                     steps=train_nbatches,
                                     shuffle=True)
-
+    for batch in train_data_gen:
+        X = batch["data"][0]
+        normalizer._feed_Data(X)
+    normalizer._save_params(params_file_name)
 
 args_dict = dict(args._get_kwargs())
 args_dict['header'] = discretizer_header
