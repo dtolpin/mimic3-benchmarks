@@ -57,17 +57,25 @@ params_file_name = 'los_ts{}.input_str:previous.start_time:zero.n5e4.normalizer'
 try:
     normalizer.load_params(params_file_name)
 except FileNotFoundError as e:
-    print("! regenerating normalization parameters")
-    train_data_gen = utils.BatchGen(reader=train_reader,
+    norm_nbatches = 1000
+    if args.small_part:
+        norm_nbatches = 10
+    print("==> generating normalization parameters")
+    norm_data_gen = utils.BatchGen(reader=train_reader,
                                     discretizer=discretizer,
-                                    normalizer=normalizer,
+                                    normalizer=None,
                                     partition=args.partition,
                                     batch_size=args.batch_size,
-                                    steps=train_nbatches,
+                                    steps=norm_nbatches,
                                     shuffle=True)
-    for batch in train_data_gen:
-        X = batch["data"][0]
-        normalizer._feed_Data(X)
+    istep = 0
+    for batch in norm_data_gen:
+        if istep == norm_data_gen.steps:
+            break
+        X = batch[0]
+        X = X.reshape((X.shape[0]*X.shape[1], X.shape[2]))
+        normalizer._feed_data(X)
+        istep += 1
     normalizer._save_params(params_file_name)
 
 args_dict = dict(args._get_kwargs())
