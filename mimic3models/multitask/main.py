@@ -49,6 +49,11 @@ discretizer = Discretizer(timestep=args.timestep,
 discretizer_header = discretizer.transform(train_reader.read_example(0)["X"])[1].split(',')
 cont_channels = [i for (i, x) in enumerate(discretizer_header) if x.find("->") == -1]
 
+args_dict = dict(args._get_kwargs())
+args_dict['header'] = discretizer_header
+args_dict['ihm_pos'] = int(48.0 / args.timestep - 1e-6)
+args_dict['target_repl'] = target_repl
+
 normalizer = Normalizer(fields=cont_channels)  # choose here onlycont vs all
 params_file_name = 'mult_ts%s.input_str:%s.start_time:zero.normalizer' % (args.timestep, args.imputation)
 try:
@@ -71,17 +76,12 @@ except FileNotFoundError as e:
     for batch in norm_data_gen:
         if istep == norm_data_gen.steps:
             break
-        X = batch[0]
+        X = batch[0][0]
         X = X.reshape((X.shape[0]*X.shape[1], X.shape[2]))
         normalizer._feed_data(X)
         istep += 1
     normalizer._save_params(params_file_name)
 
-
-args_dict = dict(args._get_kwargs())
-args_dict['header'] = discretizer_header
-args_dict['ihm_pos'] = int(48.0 / args.timestep - 1e-6)
-args_dict['target_repl'] = target_repl
 
 # Build the model
 print("==> using model {}".format(args.network))

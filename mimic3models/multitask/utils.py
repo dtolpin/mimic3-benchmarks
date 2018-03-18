@@ -17,6 +17,7 @@ class BatchGen(object):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.return_names = return_names
+        self.return_y_true = False
 
         N = reader.get_number_of_examples()
         if small_part:
