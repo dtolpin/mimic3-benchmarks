@@ -5,6 +5,8 @@ import numpy as np
 import threading
 import random
 
+_DATA_KEYS = ["decomp_M", "ihm_M", "los_y", "decomp_ts", "pheno_ts", "los_M", "decomp_y", "names", "pheno_y", "los_ts", "X", "ihm_y"]
+
 
 class BatchGen(object):
     def __init__(self, reader, discretizer, normalizer, ihm_pos, partition,
@@ -108,8 +110,10 @@ class BatchGen(object):
         B = self.batch_size
         while True:
             # convert to right format for sort_and_shuffle
-            kv_pairs = list(self.data.items())
-            mas = [kv[1] for kv in kv_pairs]
+            # The order of keys is a dirty hack so that it works.
+            # sort and shuffle fails if the first entry is the wrong
+            # one. Need to fix it later.
+            mas = [self.data[k] for k in _DATA_KEYS]
 
             if self.shuffle:
                 N = len(self.data['X'])
@@ -120,13 +124,13 @@ class BatchGen(object):
                     tmp[mas_idx] = [None] * len(mas[mas_idx])
                     for i in range(N):
                         tmp[mas_idx][i] = mas[mas_idx][order[i]]
-                for i in range(len(kv_pairs)):
-                    self.data[kv_pairs[i][0]] = tmp[i]
+                for i in range(len(_DATA_KEYS)):
+                    self.data[_DATA_KEYS[i]] = tmp[i]
             else:
                 # sort entirely
                 mas = common_utils.sort_and_shuffle(mas, B)
-                for i in range(len(kv_pairs)):
-                    self.data[kv_pairs[i][0]] = mas[i]
+                for i in range(len(_DATA_KEYS)):
+                    self.data[_DATA_KEYS[i]] = mas[i]
 
             for i in range(0, len(self.data['X']), B):
                 outputs = []

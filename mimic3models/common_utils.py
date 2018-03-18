@@ -53,15 +53,7 @@ def sort_and_shuffle(data, batch_size):
     tail = data[old_size - rem:]
     data = []
 
-    def key(x):
-        try:
-            k = x[0].shape[0]
-            return k
-        except AttributeError as e:
-            print("x[0] =", x[0])
-            raise
-
-    head.sort(key=key)
+    head.sort(key=(lambda x: x[0].shape[0]))
 
     mas = [head[i : i+batch_size] for i in range(0, len(head), batch_size)]
     random.shuffle(mas)
