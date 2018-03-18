@@ -199,4 +199,5 @@ class BatchGen(object):
             return next(self.generator)
 
     def __next__(self):
-        return self.generator.__next__()
+        with self.lock:
+            return self.generator.__next__()

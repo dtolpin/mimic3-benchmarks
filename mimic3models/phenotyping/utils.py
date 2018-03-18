@@ -87,12 +87,13 @@ class BatchGen(object):
     def __iter__(self):
         return self.generator
 
-    def __next__(self):
+    def next(self):
         with self.lock:
             return next(self.generator)
 
     def __next__(self):
-        return self.generator.__next__()
+        with self.lock:
+            return self.generator.__next__()
 
 
 def save_results(names, ts, predictions, labels, path):
